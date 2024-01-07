@@ -9,7 +9,7 @@ from PIL import Image
 from _operator import truediv
 
 class CatDog(torch.utils.data.Dataset):
-    def __init__(self, dataDir='../../../Data/IC-CatDog/train-small/', transform=None, crossNum=None,crossIDs=None):
+    def __init__(self, dataDir='./leapGestRecog/', transform=None, crossNum=None,crossIDs=None):
         # Initialize the data and label list
         self.labels = []
         self.data = []
@@ -18,23 +18,28 @@ class CatDog(torch.utils.data.Dataset):
 
         # First load all images data
         import os
-        listImage = os.listdir(dataDir)
-        listImage = sorted(listImage)
+        liste_sujet = os.listdir(dataDir)
+        liste_geste = [[dataDir+i+'/'+j for j in os.listdir(dataDir+i)] for i in liste_sujet]
+        liste_image = []
+        for i in liste_geste:
+            for j in i:
+                for k in os.listdir(j):
+                    liste_image.append(j+'/'+k)
 
-        for x in listImage:
+        for x in liste_image:
 
             #print(x)
 
             # Read the data using PIL
-            temp.append(Image.open(dataDir + x).convert('RGB'))
+            temp.append(Image.open(x).convert('RGB'))
 
             # Second filter according name for labelling : cat : 1, dog : 0
             if 'dog' in x:
                 tempL.append(torch.FloatTensor([0]))
             else:
                 tempL.append(torch.FloatTensor([1]))
-        
-        
+
+
         if crossNum is not None: 
             totalLength = len(temp)
             length = int(truediv(totalLength,crossNum))
