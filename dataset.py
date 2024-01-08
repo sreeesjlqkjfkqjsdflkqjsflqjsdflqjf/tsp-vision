@@ -7,8 +7,12 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from _operator import truediv
+from torchvision.transforms import ToTensor
+from tqdm import tqdm
+from torchvision.transforms import Compose, Resize, ToTensor
 
-class CatDog(torch.utils.data.Dataset):
+
+class GestRecog(torch.utils.data.Dataset):
     def __init__(self, dataDir='./leapGestRecog/', transform=None, crossNum=None,crossIDs=None):
         # Initialize the data and label list
         self.labels = []
@@ -21,23 +25,38 @@ class CatDog(torch.utils.data.Dataset):
         liste_sujet = os.listdir(dataDir)
         liste_geste = [[dataDir+i+'/'+j for j in os.listdir(dataDir+i)] for i in liste_sujet]
         liste_image = []
-        for i in liste_geste:
-            for j in i:
-                for k in os.listdir(j):
-                    liste_image.append(j+'/'+k)
-
-        for x in liste_image:
+        liste_label=[]
+        for sujet in liste_geste:
+            for geste in sujet:
+                for image in os.listdir(geste):
+                    liste_image.append(geste+'/'+image)
+                    liste_label.append(geste)
+        if transform is not None:
+            self.transform=transform
+        for x in tqdm(liste_image):
 
             #print(x)
 
             # Read the data using PIL
-            temp.append(Image.open(x).convert('RGB'))
+            image=Image.open(x).convert('RGB')
+            if self.transform is not None:
+                        image_tensor=self.transform(image)
+            temp.append(image_tensor)
 
-            # Second filter according name for labelling : cat : 1, dog : 0
-            if 'dog' in x:
-                tempL.append(torch.FloatTensor([0]))
-            else:
-                tempL.append(torch.FloatTensor([1]))
+            # Second filter according name for labelling : 1 = palm 02=l 03=fist 04=fist_moved 05=thumb  06=index 07=ok
+            #08=palm_moved 09=c 10=down
+            
+            #Get label in the path and convert it
+            label_path=liste_label[liste_image.index(x)]
+            label_path_splitted=label_path.split("/")
+            label=label_path_splitted[3][:2]
+            #print(label)
+            label=int(label)-1
+            #Create a one hot tensor with 1 in the corresponding index
+            label_tensor=torch.zeros(10)
+            label_tensor[label]=1
+            #Append
+            tempL.append(label_tensor)
 
 
         if crossNum is not None: 
@@ -64,10 +83,7 @@ class CatDog(torch.utils.data.Dataset):
         
         data = self.data[index]
         lbl = self.labels[index]
-
-        if self.transform is not None:
-            data = self.transform(data)
-
+        
         return data, lbl
 
         pass
@@ -86,13 +102,14 @@ if __name__ == '__main__':
         transforms.Resize((64,64)),
         transforms.ToTensor()
         ])
-
-    
-    cd = CatDog(transform=tr,crossNum=5, crossIDs=[5])
+    cd = GestRecog(transform=tr,crossNum=None, crossIDs=None)
     print(len(cd))
-    
-    images,labels = next(iter(cd))
-    print(images,labels)
-    print(images.shape)
+    # torch.save(cd.data[:len(cd.data)//2], 'dataset_part1.pth')
+    # torch.save(cd.data[len(cd.data)//2:], 'dataset_part2.pth')
+    # torch.save(cd.labels[:len(cd.labels)//2], 'labels_part1.pth')
+    # torch.save(cd.labels[len(cd.labels)//2:], 'labels_part2.pth')
+    image,label = next(iter(cd))
+    torch.save(cd.data,'images.pth')
+    torch.save(cd.labels,'labels.pth')
     exit(0)
     
