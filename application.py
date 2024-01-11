@@ -1,4 +1,6 @@
 import torch
 
-modele = torch.load('sauvegarde.pth')
+device = torch.device('cpu')
+modele = torch.jit.load('sauvegarde.pt', map_location=device)
 modele.eval()
+modele.forward()
