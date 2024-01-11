@@ -35,7 +35,7 @@ class GestRecog(torch.utils.data.Dataset):
             self.transform = transform
         for x in tqdm(liste_image):
             # Read the data using PIL
-            image = Image.open(x).convert('RGB')
+            image = Image.open(x).convert('L')
             if self.transform is not None:
                 image_tensor = self.transform(image)
             temp.append(image_tensor)
@@ -85,12 +85,12 @@ class GestRecog(torch.utils.data.Dataset):
 
 if __name__ == '__main__':
     tr = transforms.Compose([
-        transforms.Resize((64, 64)),
+        transforms.Resize((128, 64)),
         transforms.ToTensor(),
-        transforms.RandomHorizontalFlip(),  
-        transforms.RandomRotation(15),  
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])  # Normalizing mean and std values
+        #transforms.RandomHorizontalFlip(),  
+        #transforms.RandomRotation(90),  
+        #transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
+        transforms.Normalize(mean=[0], std=[0.5])  # Normalizing mean and std values
     ])
     cd = GestRecog(transform=tr, crossNum=None, crossIDs=None)
     print(len(cd))
