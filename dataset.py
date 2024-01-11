@@ -17,22 +17,44 @@ class GestRecog(torch.utils.data.Dataset):
         # Initialize the data and label list
         self.labels = []
         self.data = []
+        self.data_perso=[]
+        self.labels_perso=[]
         temp = []
         tempL = []
+        if transform is not None:
+            self.transform = transform
 
         # First load all images data
         import os
+        path_ciseau="./ciseau/"
+        path_poing="./poing/"
+        liste_poing=os.listdir(path_poing)
+        liste_ciseau=os.listdir(path_ciseau)
         liste_sujet = os.listdir(dataDir)
         liste_geste = [[dataDir + i + '/' + j for j in os.listdir(dataDir + i)] for i in liste_sujet]
         liste_image = []
         liste_label = []
+        for image in liste_ciseau:
+            image = Image.open(path_ciseau+image).convert('L')
+            if self.transform is not None:
+                image_tensor = self.transform(image)
+            self.data_perso.append(image_tensor)
+            label_tensor = torch.zeros(2)
+            label_tensor[0] = 1
+            self.labels_perso.append(label_tensor)
+        for image in liste_poing:
+            image = Image.open(path_poing+image).convert('L')
+            if self.transform is not None:
+                image_tensor = self.transform(image)
+            self.data_perso.append(image_tensor)
+            label_tensor = torch.zeros(2)
+            label_tensor[1] = 1
+            self.labels_perso.append(label_tensor)
         for sujet in liste_geste:
             for geste in sujet:
                 for image in os.listdir(geste):
                     liste_image.append(geste + '/' + image)
                     liste_label.append(geste)
-        if transform is not None:
-            self.transform = transform
         for x in tqdm(liste_image):
             # Read the data using PIL
             image = Image.open(x).convert('L')
@@ -96,5 +118,7 @@ if __name__ == '__main__':
     print(len(cd))
     image, label = next(iter(cd))
     torch.save(cd.data, 'images.pth')
+    torch.save(cd.data_perso,"images_perso.pth")
     torch.save(cd.labels, 'labels.pth')
+    torch.save(cd.labels_perso,"labels_perso.pth")
     exit(0)
