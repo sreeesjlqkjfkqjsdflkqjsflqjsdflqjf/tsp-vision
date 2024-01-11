@@ -1,4 +1,4 @@
 import torch
 
-modele = torch.jit.load('sauvegarde.pt')
+modele = torch.load('sauvegarde.pth')
 modele.eval()
