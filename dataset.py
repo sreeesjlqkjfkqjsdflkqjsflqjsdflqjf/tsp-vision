@@ -13,10 +13,8 @@ from torchvision.transforms import Compose, Resize, ToTensor, Normalize
 
 
 class GestRecog(torch.utils.data.Dataset):
-    def __init__(self, dataDir='./Personnal_data/', transform=None, crossNum=None, crossIDs=None):
+    def __init__(self, dataDir='./jeu_de_donnee_maison/', transform=None, crossNum=None, crossIDs=None):
         # Initialize the data and label list
-        self.labels = []
-        self.data = []
         self.data_perso=[]
         self.labels_perso=[]
         temp = []
@@ -26,26 +24,17 @@ class GestRecog(torch.utils.data.Dataset):
 
         # First load all images data
         import os
-        liste_categories = os.listdir(dataDir)
-        liste_images = [[dataDir +i +"/"+ j for j in os.listdir(dataDir + i)] for i in liste_categories]
-        for cate in tqdm(liste_images):
-            for image_path in cate:
-                image = Image.open(image_path).convert('L')
+        liste_classe = ["ciseau", "poing", "feuille"]
+        for n, i in enumerate(tqdm(liste_classe)):
+            liste_image = [dataDir+i+"/"+j  for j in os.listdir(dataDir+i)]
+            for chem_im in tqdm(liste_image, leave = False):
+                image = Image.open(chem_im).convert('L')
                 if self.transform is not None:
                     image_tensor = self.transform(image)
                 self.data_perso.append(image_tensor)
-                
-                label = int(image_path.split("/")[2]) - 1
-                label_tensor = torch.zeros(10)
-                label_tensor[label] = 1
+                label_tensor = torch.zeros(len(liste_classe))
+                label_tensor[n] = 1
                 self.labels_perso.append(label_tensor)
-
-            # Second filter according name for labelling : 1 = palm 02=l 03=fist 04=fist_moved 05=thumb  06=index 07=ok
-            # 08=palm_moved 09=c 10=down
-
-            # Get label in the path and convert it
-
-            # Create a one hot tensor with 1 in the corresponding index
 
         if crossNum is not None:
             totalLength = len(temp)
@@ -86,9 +75,6 @@ if __name__ == '__main__':
         transforms.Normalize(mean=[0], std=[0.5])  # Normalizing mean and std values
     ])
     cd = GestRecog(transform=tr, crossNum=None, crossIDs=None)
-    print(len(cd))
-    torch.save(cd.data, 'images.pth')
     torch.save(cd.data_perso,"images_perso.pth")
-    torch.save(cd.labels, 'labels.pth')
     torch.save(cd.labels_perso,"labels_perso.pth")
     exit(0)
