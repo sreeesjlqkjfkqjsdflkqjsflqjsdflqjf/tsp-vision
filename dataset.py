@@ -24,7 +24,8 @@ class GestRecog(torch.utils.data.Dataset):
 
         # First load all images data
         import os
-        liste_classe = ["ciseau", "poing", "feuille"]
+        liste_classe = sorted(os.listdir(dataDir)) 
+        print(liste_classe)
         for n, i in enumerate(tqdm(liste_classe)):
             liste_image = [dataDir+i+"/"+j  for j in os.listdir(dataDir+i)]
             for chem_im in tqdm(liste_image, leave = False):
