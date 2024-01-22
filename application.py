@@ -5,6 +5,7 @@ import torch
 from torchvision import transforms
 from torch.jit import load
 import mediapipe as mp
+import numpy as np
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands()
@@ -12,7 +13,7 @@ hands = mp_hands.Hands()
 pad = 20
 
 # Charger le modèle sauvegardé
-model_path = 'sauvegarde.pt'
+model_path = 'sauvegarde(1).pt'
 model = load(model_path, map_location=torch.device('cpu'))
 model.eval()
 
@@ -78,8 +79,16 @@ def capture_and_predict_gesture():
             # Crop la main de l'image
             cropped_frame = crop_hand_mp(frame)
 
+            cropped_frame = cv2.resize(cropped_frame, (frame.shape[1], frame.shape[0]))
+
+            concatenated_frame = cv2.hconcat([frame, cropped_frame])
+
+
+
+
+
             # Afficher l'image avec la main recadrée
-            cv2.imshow('Capture Real-Life Gesture', cropped_frame)
+            cv2.imshow('Capture Real-Life Gesture', concatenated_frame)
 
             # Enregistrer l'image recadrée
             image_path = os.path.join(os.getcwd(), 'captured_image.jpg')
