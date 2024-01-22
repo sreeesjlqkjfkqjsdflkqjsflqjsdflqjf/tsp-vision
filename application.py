@@ -46,7 +46,7 @@ def crop_hand_mp(frame):
     return frame
 
 def recognize_gesture(image_path):
-    image = Image.open(image_path).convert('L')
+    image = Image.open(image_path).convert('RGB')
     image_tensor = image_transform(image)
     image_tensor = image_tensor.unsqueeze(0)  
 
