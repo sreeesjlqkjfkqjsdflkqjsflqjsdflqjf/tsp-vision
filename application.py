@@ -11,18 +11,25 @@ model = load(model_path, map_location=torch.device('cpu'))
 model.eval()
 
 
+dic = ["ciseau", "feuille", "pierre"]
+dic_ot = ["palm", "one", "fist", "fist_moved",
+          "thumb", "index", "ok", "palm_moved", "c", "down"]
+
+
 image_transform = transforms.Compose([
-    transforms.Resize((128, 64)),
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0], std=[0.5])
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
 
 def recognize_gesture(image_path):
 
-    image = Image.open(image_path).convert('RGB')
+    image = Image.open(image_path)
     image_tensor = image_transform(image)
     image_tensor = image_tensor.unsqueeze(0)
+    # image_tensor = image_tensor.to(device)
 
     with torch.no_grad():
         output = model(image_tensor)
@@ -59,7 +66,8 @@ def capture_and_predict_gesture():
             image_path = os.path.join(os.getcwd(), 'captured_image.jpg')
             cv2.imwrite(image_path, frame)
 
-            predicted_label = recognize_gesture(image_path)
+            predicted_label = dic[recognize_gesture(image_path)]
+
             print(f"Predicted Gesture Label: {predicted_label}")
 
             if cv2.waitKey(10) & 0xFF == ord('q'):
