@@ -19,29 +19,27 @@ image_transform = transforms.Compose([
 
 
 def recognize_gesture(image_path):
-    
-    image = Image.open(image_path).convert('L')
-    image_tensor = image_transform(image)
-    image_tensor = image_tensor.unsqueeze(0)  
 
-    
+    image = Image.open(image_path).convert('RGB')
+    image_tensor = image_transform(image)
+    image_tensor = image_tensor.unsqueeze(0)
+
     with torch.no_grad():
         output = model(image_tensor)
 
-    
     _, predicted = torch.max(output.data, 1)
-    
-    
+
     os.remove(image_path)
 
     return predicted.item()
 
 # Fonction pour capturer une seule image, l'enregistrer et appliquer le modèle
+
+
 def capture_and_predict_gesture():
-    
+
     cap = cv2.VideoCapture(0)
 
-    
     if not cap.isOpened():
         print("Erreur: Impossible d'ouvrir la caméra.")
         exit()
@@ -49,26 +47,21 @@ def capture_and_predict_gesture():
     try:
         #
         while True:
-            
+
             ret, frame = cap.read()
 
-            
             if not ret:
                 print("Erreur: Impossible de capturer une image.")
                 exit()
 
-            
             cv2.imshow('Capture Real-Life Gesture', frame)
 
-            
             image_path = os.path.join(os.getcwd(), 'captured_image.jpg')
             cv2.imwrite(image_path, frame)
 
-            
             predicted_label = recognize_gesture(image_path)
             print(f"Predicted Gesture Label: {predicted_label}")
 
-            
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
 
@@ -77,6 +70,6 @@ def capture_and_predict_gesture():
         cap.release()
         cv2.destroyAllWindows()
 
+
 # Appeler la fonction pour démarrer le programme
 capture_and_predict_gesture()
-
