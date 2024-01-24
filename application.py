@@ -1,4 +1,3 @@
-
 import cv2
 import os
 from PIL import Image
@@ -61,7 +60,11 @@ def recognize_gesture(image_path):
     
     os.remove(image_path)
 
-    return predicted.item()
+    # Mappe les étiquettes prédites à des noms spécifiques
+    gesture_labels = {0: "ciseau", 1: "feuille", 2: "pierre"}
+    predicted_label = gesture_labels.get(predicted.item(), "Inconnu")
+
+    return predicted_label
 
 # Fonction pour capturer une seule image, l'enregistrer et appliquer le modèle
 def capture_and_predict_gesture():
@@ -80,24 +83,19 @@ def capture_and_predict_gesture():
                 exit()
 
             # Crop la main de l'image
-            cropped_frame,x_min,x_max,y_max,y_min = crop_hand_mp(frame)
+            cropped_frame, x_min, x_max, y_max, y_min = crop_hand_mp(frame)
 
             cropped_frame = cv2.resize(cropped_frame, (frame.shape[1], frame.shape[0]))
 
-            cv2.rectangle(frame,(x_min-pad,y_min-pad),(x_max+pad,y_max+pad),(0,255,0),2)
+            cv2.rectangle(frame, (x_min-pad, y_min-pad), (x_max+pad, y_max+pad), (0, 255, 0), 2)
 
             concatenated_frame = cv2.hconcat([frame, cropped_frame])
 
-
-
-            
             cv2.imshow('Capture Real-Life Gesture', concatenated_frame)
 
-           
             image_path = os.path.join(os.getcwd(), 'captured_image.jpg')
             cv2.imwrite(image_path, cropped_frame)
 
-           
             predicted_label = recognize_gesture(image_path)
             print(f"Predicted Gesture Label: {predicted_label}")
 
