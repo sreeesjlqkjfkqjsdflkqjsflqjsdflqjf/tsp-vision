@@ -8,6 +8,9 @@ from torch.jit import load
 # Charger le modèle sauvegardé
 model_path = 'sauvegarde.pt'
 model = load(model_path, map_location=torch.device('cpu'))
+
+print(model)
+exit
 model.eval()
 
 
