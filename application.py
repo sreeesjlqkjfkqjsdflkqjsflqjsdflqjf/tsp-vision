@@ -1,3 +1,4 @@
+
 import cv2
 import os
 from PIL import Image
@@ -13,12 +14,12 @@ hands = mp_hands.Hands()
 pad = 20
 
 # Charger le modèle sauvegardé
-model_path = 'sauvegarde(1).pt'
+model_path = 'sauvegarde(3).pt'
 model = load(model_path, map_location=torch.device('cpu'))
 model.eval()
 
 image_transform = transforms.Compose([
-    transforms.Resize((128, 64)),
+    transforms.Resize((128, 128)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0], std=[0.5])
 ])
@@ -43,8 +44,10 @@ def crop_hand_mp(frame):
 
         if x_max > x_min and y_max > y_min:
             hand_cropped = frame[y_min-pad:y_max+pad, x_min-pad:x_max+pad]
-            return hand_cropped
-    return frame
+
+            return hand_cropped,x_min,x_max,y_max,y_min
+            
+    return frame,x_min,x_max,y_max,y_min
 
 def recognize_gesture(image_path):
     image = Image.open(image_path).convert('RGB')
@@ -77,24 +80,24 @@ def capture_and_predict_gesture():
                 exit()
 
             # Crop la main de l'image
-            cropped_frame = crop_hand_mp(frame)
+            cropped_frame,x_min,x_max,y_max,y_min = crop_hand_mp(frame)
 
             cropped_frame = cv2.resize(cropped_frame, (frame.shape[1], frame.shape[0]))
+
+            cv2.rectangle(frame,(x_min-pad,y_min-pad),(x_max+pad,y_max+pad),(0,255,0),2)
 
             concatenated_frame = cv2.hconcat([frame, cropped_frame])
 
 
 
-
-
-            # Afficher l'image avec la main recadrée
+            
             cv2.imshow('Capture Real-Life Gesture', concatenated_frame)
 
-            # Enregistrer l'image recadrée
+           
             image_path = os.path.join(os.getcwd(), 'captured_image.jpg')
             cv2.imwrite(image_path, cropped_frame)
 
-            # Appliquer le modèle de reconnaissance de gestes
+           
             predicted_label = recognize_gesture(image_path)
             print(f"Predicted Gesture Label: {predicted_label}")
 
@@ -108,4 +111,3 @@ def capture_and_predict_gesture():
 
 # Appeler la fonction pour démarrer le programme
 capture_and_predict_gesture()
-
